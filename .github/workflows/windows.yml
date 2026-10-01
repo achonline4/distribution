@@ -1,0 +1,39 @@
+name: Windows build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "windows/**"
+      - ".github/workflows/windows.yml"
+  pull_request:
+    paths:
+      - "windows/**"
+      - ".github/workflows/windows.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      # Self-contained: bundles the .NET runtime, so the target machine needs nothing installed.
+      - name: Publish
+        run: >
+          dotnet publish windows/HelloWorld/HelloWorld.csproj
+          -c Release
+          -r win-x64
+          -p:Platform=x64
+          --self-contained
+          -o publish/win-x64
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: HelloWorld-win-x64
+          path: publish/win-x64
+          if-no-files-found: error
